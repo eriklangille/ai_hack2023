@@ -23,7 +23,7 @@ const ChartFrame = ({title, index, javascript, prompt}: ChartProps) => {
     <div className='bg-slate-50 min-w-80 w-fit min-h-80 rounded drop-shadow p-2'>
       {/* <p>{'inuse: ' + chartInUse}</p> */}
       <h1 className='ml-1.5 text-left font-bold text-ellipsis'>{title}</h1>
-      <div className={`w-80 h-80 rounded ${ chartInUse ? 'bg-slate-50': 'animate-pulse bg-slate-200'} m-1.5`}>
+      <div className={`w-[35rem] h-60 rounded ${ chartInUse ? 'bg-slate-50': 'animate-pulse bg-slate-200'} m-1.5`}>
         <canvas id={`chart${index}`}></canvas>
       </div>
       {/* {prompt && (

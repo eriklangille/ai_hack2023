@@ -1,8 +1,11 @@
 import ChartFrame from './components/ChartFrame';
 import './App.css';
-
+import sampleData from './assets/mission_launches.json';
+import { useEffect, useState } from 'react';
 
 function App() {
+
+  const [data, setData] = useState<any>([]);
   const testChartNames = [
     'Chart 1',
     'Chart 2',
@@ -11,37 +14,22 @@ function App() {
     'Chart 5',
   ];
 
-  (window as any).data = [
-    {
-      "Unnamed: 0.1": 0,
-      "Unnamed: 0": 0,
-      "Organisation": "SpaceX",
-      "Location": "LC-39A, Kennedy Space Center, Florida, USA",
-      "Date": 1596777120000,
-      "Detail": "Falcon 9 Block 5 | Starlink V1 L9 & BlackSky",
-      "Rocket_Status": "StatusActive",
-      "Price": 50.0,
-      "Mission_Status": "Success"
-    },
-    {
-      "Unnamed: 0.1": 1,
-      "Unnamed: 0": 1,
-      "Organisation": "CASC",
-      "Location": "Site 9401 (SLS-2), Jiuquan Satellite Launch Center, China",
-      "Date": 1596686460000,
-      "Detail": "Long March 2D | Gaofen-9 04 & Q-SAT",
-      "Rocket_Status": "StatusActive",
-      "Price": 29.75,
-      "Mission_Status": "Success"
-    },
-  ];
 
-  // useEffect(() => {
-  //   // (window as any).data.forEach(console.log)
-  // }, [])
+  useEffect(() => {
+    (window as any).data = sampleData;
+    if (sampleData) {
+      setData(sampleData);
+    }
+    // console.log('sample data', sampleData)
+    // console.log(data);
+  }, [data])
 
   const headerJS =`
   const data = window.data;
+
+  if (!data) {
+    return;
+  }
 
   const canvas = document.getElementById("chart1");
   const context = canvas.getContext("2d");
@@ -86,7 +74,7 @@ function App() {
     
 `;
 
-  return (
+  return data ? (
     <section className='flex flex-row flex-wrap gap-4'>
       {
         testChartNames.map((name, index) => (
@@ -100,7 +88,7 @@ function App() {
         ))
       }
     </section>
-  )
+  ) : null
 }
 
 export default App
