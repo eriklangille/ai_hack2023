@@ -1,5 +1,6 @@
 import os
 
+import pandas as pd
 import openai 
 import tenacity 
 from flask import Flask, jsonify, request
@@ -28,8 +29,20 @@ def hello_world():
 @app.route('/chat', methods=['POST'])
 def chat():
     prompt = request.json['prompt']
+    response = cached_chatcompletion_create(
+    model="gpt-3.5-turbo",
+    messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Who won the world series in 2020?"},
+            {"role": "assistant", "content": "The Los Angeles Dodgers won the World Series in 2020."},
+            {"role": "user", "content": "Where was it played?"}
+        ]
+    )
     response = cached_chatcompletion_create(prompt)
     return jsonify(response)
+
+def handle_chat_response(response):
+    ...
 
 if __name__ == '__main__':
     app.run(debug=True)
