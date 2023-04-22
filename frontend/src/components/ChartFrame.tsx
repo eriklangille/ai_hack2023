@@ -14,8 +14,12 @@ const ChartFrame = ({title, index, javascript, prompt}: ChartProps) => {
   useEffect(() => {
     if (javascript && !chartInUse) {
       setChartInUse(true);
-      const fn = new Function(javascript);
-      fn();
+      try {
+        const fn = new Function(javascript);
+        fn();
+      } catch {
+        console.log('error', javascript)
+      }
     }
   }, [javascript, chartInUse])
 
