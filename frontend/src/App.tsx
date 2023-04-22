@@ -34,43 +34,64 @@ function App() {
   const canvas = document.getElementById("chart1");
   const context = canvas.getContext("2d");
 
-  if (window.chart) {
-    window.chart.destroy();
+  if (window.chart1 && window.chart1.destroy) {
+    window.chart1.destroy();
   }
 
 `
 
   const sampleJS = `
-  // Assuming the JSON data is stored in a variable named 'data'
-  // Extract the organizations and the number of missions by each organization
-  const organizations = {};
-  for (const mission of data) {
-    if (mission.Organisation in organizations) {
-      organizations[mission.Organisation]++;
+  const orgMissions = {};
+  data.forEach((mission) => {
+    if (orgMissions[mission.Organisation]) {
+      orgMissions[mission.Organisation]++;
     } else {
-      organizations[mission.Organisation] = 1;
+      orgMissions[mission.Organisation] = 1;
     }
-  }
+  });
   
-  // Create an array of the organization names and an array of the corresponding mission counts
-  const organizationNames = Object.keys(organizations);
-  const missionCounts = Object.values(organizations);
+  const sortedOrgMissions = Object.entries(orgMissions)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 10);
   
-  // Create a bar chart using Chart.js and attach it to the element with ID 'chart1'
-  const ctx = document.getElementById('chart1').getContext('2d');
-  window.chart = new Chart(ctx, {
+  const labels = sortedOrgMissions.map(([org]) => org);
+  const dataPoints = sortedOrgMissions.map(([, count]) => count);
+  
+  const chartConfig = {
     type: 'bar',
     data: {
-      labels: organizationNames,
-      datasets: [{
-        label: 'Number of missions by each organization',
-        data: missionCounts,
-        backgroundColor: 'rgba(54, 162, 235, 0.5)',
-        borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 1
-      }]
+      labels: labels,
+      datasets: [
+        {
+          label: 'Number of Missions by Organization',
+          data: dataPoints,
+          backgroundColor: 'rgba(54, 162, 235, 0.2)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1,
+        },
+      ],
     },
-  });
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: 'Number of Missions',
+          },
+        },
+        x: {
+          title: {
+            display: true,
+            text: 'Organizations',
+          },
+        },
+      },
+    },
+  };
+  
+  const chart1 = new Chart(document.getElementById('chart1'), chartConfig);
+  window.chart1 = chart1;
     
 `;
 
