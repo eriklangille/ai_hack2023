@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import CopyableTextBox from "./CopyableTextbox";
+// import CopyableTextBox from "./CopyableTextbox";
 
 type ChartProps = {
   title: string;

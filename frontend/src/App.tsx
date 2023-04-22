@@ -2,10 +2,12 @@ import ChartFrame from './components/ChartFrame';
 import './App.css';
 import sampleData from './assets/mission_launches.json';
 import { useEffect, useState } from 'react';
+import { chart_names, formatList, potential_charts } from './services/gptService';
 
 function App() {
 
   const [data, setData] = useState<any>([]);
+  const [chartTitles, setChartTitles] = useState<string[]>([]);
   const testChartNames = [
     'Chart 1',
     'Chart 2',
@@ -14,6 +16,25 @@ function App() {
     'Chart 5',
   ];
 
+  useEffect(() => {
+    potential_charts('mission_launches.csv').then((res) => {
+      console.log(res);
+      setChartTitles(formatList(res));
+      // chart_names(res).then((res) => {
+      //   console.log(res);
+      // });
+    });
+  }, [])
+
+
+  // useEffect(() => {
+  //   (window as any).data = sampleData;
+  //   if (sampleData) {
+  //     setData(sampleData);
+  //   }
+  //   // console.log('sample data', sampleData)
+  //   // console.log(data);
+  // }, [data])
 
   useEffect(() => {
     (window as any).data = sampleData;
@@ -98,7 +119,7 @@ function App() {
   return data ? (
     <section className='flex flex-row flex-wrap gap-4'>
       {
-        testChartNames.map((name, index) => (
+        chartTitles.map((name, index) => (
           <ChartFrame
             key={index}
             title={name}

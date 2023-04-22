@@ -6,10 +6,12 @@ import openai
 import tenacity 
 from flask import Flask, jsonify, request
 from joblib import Memory
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
+CORS(app)
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = open("key.txt").read().strip()
 
 # retry 3 times with exponential backoff
 retry_fetch = tenacity.retry(
@@ -108,12 +110,13 @@ def get_generate_chart(sample: str, desc: str, index: str) -> str:
 def hello_world():
     return 'Hello, World!'
 
-@app.route('/potential_charts', methods=['POST'])
+@app.route('/api/potential_charts', methods=['POST'])
 def potential_charts():
+    openai.api_key = open("key.txt").read().strip()
     file = request.json['file']
     df = pd.read_csv(f"./uploaded/{file}")
     prompt = get_df_head_prompt(df)
-    response = cached_chatcompletion_create(
+    response = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
     messages=[
             {"role": "system", "content": "You are a helpful assistant used to analyze data."},
@@ -124,10 +127,11 @@ def potential_charts():
     )
     return jsonify(response)
 
-@app.route('/chart_names', methods=['POST'])
+@app.route('/api/chart_names', methods=['POST'])
 def chart_names():
+    openai.api_key = open("key.txt").read().strip()
     prompt = request.json['options']
-    response = cached_chatcompletion_create(
+    response = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
     messages=[
             {"role": "system", "content": "You are a helpful assistant used to analyze data."},
@@ -138,12 +142,13 @@ def chart_names():
     )
     return jsonify(response)
 
-@app.route('/format_data', methods=['POST'])
+@app.route('/api/format_data', methods=['POST'])
 def format_data():
+    openai.api_key = open("key.txt").read().strip()
     file = request.json['file']
     df = pd.read_csv(f"./uploaded/{file}")
     prompt = get_format_data(df)
-    response = cached_chatcompletion_create(
+    response = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
     messages=[
             {"role": "system", "content": "You are a helpful assistant used to analyze data."},
@@ -162,13 +167,14 @@ def format_data():
     except:
         return jsonify({"error": "Invalid code"})
 
-@app.route('/generate_chart_js', methods=['POST'])
+@app.route('/api/generate_chart_js', methods=['POST'])
 def generate_chart_js():
+    openai.api_key = open("key.txt").read().strip()
     sample = request.json['json_sample']
     desc = request.json['desc']
     index = request.json['index']
     prompt = get_generate_chart(sample, desc, index)
-    response = cached_chatcompletion_create(
+    response = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
     messages=[
             {"role": "system", "content": "You are a helpful assistant used to analyze data."},
@@ -180,4 +186,4 @@ def generate_chart_js():
     return jsonify(response)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5000)
