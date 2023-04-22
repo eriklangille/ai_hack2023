@@ -103,7 +103,7 @@ def get_format_data(input: str) -> str:
     return prompt
 
 def get_generate_chart(sample: str, desc: str, index: str) -> str:
-    prompt = f"Below is the first two records of a JSON file. Assume the data is formatted in a JS object in the variable named 'data'. The first 2 objects are below. You do not need to create the 'data' variable. Only output the JavaScript code snippet, no other text. Write javascript code using Chart.js and attach it to the id 'chart{index}' and assign the Chart class to 'window.chart{index}' to plot the following chart: '{desc}'. Only show the top 10 results. Do NOT write any HTML. Do NOT generate any script tags.\n\n{sample}"
+    prompt = f"Below is the first two records of a JSON file. Assume the data is formatted in a JS object in the variable named 'data'. The first 2 objects are below. You do not need to create the 'data' variable. Only output the JavaScript code snippet, no other text. Write javascript code using Chart.js and attach it to the id 'chart{index}' and assign the Chart class to 'window.chart{index}' to plot the following chart: '{desc}'. Only show the top 10 results. Do NOT write any HTML. Do NOT generate any script tags. Use 'x' and 'y' instead of 'xAxes' and 'yAxes'\n\n{sample}"
     return prompt
 
 @app.route('/')
@@ -148,23 +148,36 @@ def format_data():
     file = request.json['file']
     df = pd.read_csv(f"./uploaded/{file}")
     prompt = get_format_data(df)
-    response = openai.ChatCompletion.create(
-    model="gpt-3.5-turbo",
-    messages=[
-            {"role": "system", "content": "You are a helpful assistant used to analyze data."},
-            {"role": "user", "content": PROMPT_FORMAT_DATA},
-            {"role": "assistant", "content": RESPONSE_FORMAT_DATA},
-            {"role": "user", "content": prompt}
-        ]
-    )
-    data = response['choices'][0]['message']['content']
+    # response = openai.ChatCompletion.create(
+    # model="gpt-3.5-turbo",
+    # messages=[
+    #         {"role": "system", "content": "You are a helpful assistant used to analyze data."},
+    #         {"role": "user", "content": PROMPT_FORMAT_DATA},
+    #         {"role": "assistant", "content": RESPONSE_FORMAT_DATA},
+    #         {"role": "user", "content": prompt}
+    #     ]
+    # )
+    # data = response['choices'][0]['message']['content']
     try:
-        eval(data) # Check if the code is valid
+        print("Evaluating code")
+        # print(data)
+        # eval(data) # Check if the code is valid
         buf = StringIO()
+        df = df.dropna()
+        df['Unnamed: 0.1'] = pd.to_numeric(df['Unnamed: 0.1'], errors='coerce').dropna()
+        df['Unnamed: 0'] = pd.to_numeric(df['Unnamed: 0'], errors='coerce').dropna()
+        df['Organisation'] = df['Organisation'].astype(str).dropna()
+        df['Location'] = df['Location'].astype(str).dropna()
+        df['Date'] = pd.to_datetime(df['Date'], errors='coerce').dropna()
+        df['Detail'] = df['Detail'].astype(str).dropna()
+        df['Rocket_Status'] = df['Rocket_Status'].astype(str).dropna()
+        df['Price'] = pd.to_numeric(df['Price'], errors='coerce').dropna()
+        df['Mission_Status'] = df['Mission_Status'].astype(str).dropna()
         df.to_csv(buf, orient='records')
         # Retrieve the contents of the buffer as a string
         return jsonify(buf.getvalue())
-    except:
+    except Exception as e:
+        print(e)
         return jsonify({"error": "Invalid code"})
 
 @app.route('/api/generate_chart_js', methods=['POST'])
